@@ -1,44 +1,54 @@
 import { initializeApp } from "firebase/app";
-import { getFirestore } from "firebase/firestore/lite"
+import {
+    getFirestore,
+    collection,
+    doc,
+    getDocs,
+    getDoc,
+    query,
+    where
+} from "firebase/firestore/lite"
 
 const firebaseConfig = {
-  apiKey: "AIzaSyCujCXjQu4YCEu8aGqjI3G5z9kB2bP8sJ4",
-  authDomain: "vanlife-5cb29.firebaseapp.com",
-  projectId: "vanlife-5cb29",
-  storageBucket: "vanlife-5cb29.appspot.com",
-  messagingSenderId: "595657429899",
-  appId: "1:595657429899:web:dfdb00c2eecaedef7a158e"
+    apiKey: "AIzaSyD_k3v3HK3tKEqhlqFHPkwogW7PqEqhGhk",
+    authDomain: "vanlife-a1af5.firebaseapp.com",
+    projectId: "vanlife-a1af5",
+    storageBucket: "vanlife-a1af5.appspot.com",
+    messagingSenderId: "803007000356",
+    appId: "1:803007000356:web:446cd3a1ca406839258db1"
 };
 
 const app = initializeApp(firebaseConfig);
+const db = getFirestore(app)
 
+const vansCollectionRef = collection(db, "vans")
 
-export async function getVans(id) {
-    const url = id ? `/api/vans/${id}` : "/api/vans"
-    const res = await fetch(url)
-    if (!res.ok) {
-        throw {
-            message: "Failed to fetch vans",
-            statusText: res.statusText,
-            status: res.status
-        }
-    }
-    const data = await res.json()
-    return data.vans
+export async function getVans() {
+    const querySnapshot = await getDocs(vansCollectionRef)
+    const dataArr = querySnapshot.docs.map(doc => ({
+        ...doc.data(),
+        id: doc.id
+    }))
+    return dataArr
 }
 
-export async function getHostVans(id) {
-    const url = id ? `/api/host/vans/${id}` : "/api/host/vans"
-    const res = await fetch(url)
-    if (!res.ok) {
-        throw {
-            message: "Failed to fetch vans",
-            statusText: res.statusText,
-            status: res.status
-        }
+export async function getVan(id) {
+    const docRef = doc(db, "vans", id)
+    const vanSnapshot = await getDoc(docRef)
+    return {
+        ...vanSnapshot.data(),
+        id: vanSnapshot.id
     }
-    const data = await res.json()
-    return data.vans
+}
+
+export async function getHostVans() {
+    const q = query(vansCollectionRef, where("hostId", "==", "123"))
+    const querySnapshot = await getDocs(q)
+    const dataArr = querySnapshot.docs.map(doc => ({
+        ...doc.data(),
+        id: doc.id
+    }))
+    return dataArr
 }
 
 export async function loginUser(creds) {
